@@ -7,6 +7,7 @@ try:
 except ImportError:
     StrictRedis = None
 
+
 class RedisModule(BaseModule):
     key = 'redis'
 
@@ -16,6 +17,7 @@ class RedisModule(BaseModule):
     def get_details(self):
         redis_nodes = RequestTrace.instance().stacktracer.get_nodes('REDIS')
         return [{'operation': node.extra['operation'], 'key': node.extra['key'], 'time': node.duration} for node in redis_nodes]
+
 
 def init():
     if StrictRedis is None:

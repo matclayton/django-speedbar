@@ -3,6 +3,7 @@ from .base import BaseModule
 
 import os
 
+
 class HostInformationModule(BaseModule):
     key = 'host'
 

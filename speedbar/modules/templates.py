@@ -11,10 +11,12 @@ register = Library()
 
 
 class DecoratingParserProxy(object):
+
     """
     Mocks out the django template parser, passing templatetags through but
     first wrapping them to include performance data
     """
+
     def __init__(self, parser):
         self.parser = parser
 
@@ -22,13 +24,15 @@ class DecoratingParserProxy(object):
         wrapped_library = Library()
         wrapped_library.filters = library.filters
         for name, tag_compiler in library.tags.items():
-            wrapped_library.tags[name] = self.wrap_compile_function(name, tag_compiler)
+            wrapped_library.tags[name] = self.wrap_compile_function(
+                name, tag_compiler)
         self.parser.add_library(wrapped_library)
 
     def wrap_compile_function(self, name, tag_compiler):
         def compile(*args, **kwargs):
             node = tag_compiler(*args, **kwargs)
-            node.render = trace_function(node.render, ('TEMPLATE_TAG', 'Render tag: ' + name, {}))
+            node.render = trace_function(
+                node.render, ('TEMPLATE_TAG', 'Render tag: ' + name, {}))
             return node
         return compile
 

@@ -7,8 +7,9 @@ try:
 except ImportError:
     memcache = None
 
-MEMCACHE_OPERATIONS = [ 'add', 'append', 'cas', 'decr', 'delete', 'get', 'gets', 'incr', 'prepend', 'replace', 'set', ]
-MEMCACHE_MULTI_OPERATIONS = [ 'get_multi', 'set_multi', 'delete_multi', ]
+MEMCACHE_OPERATIONS = ['add', 'append', 'cas', 'decr',
+                       'delete', 'get', 'gets', 'incr', 'prepend', 'replace', 'set', ]
+MEMCACHE_MULTI_OPERATIONS = ['get_multi', 'set_multi', 'delete_multi', ]
 
 
 class MemcacheModule(BaseModule):
@@ -18,7 +19,8 @@ class MemcacheModule(BaseModule):
         return RequestTrace.instance().stacktracer.get_node_metrics('MEMCACHE')
 
     def get_details(self):
-        memcache_nodes = RequestTrace.instance().stacktracer.get_nodes('MEMCACHE')
+        memcache_nodes = RequestTrace.instance().stacktracer.get_nodes(
+            'MEMCACHE')
         return [{'operation': node.extra['operation'], 'key': node.extra['key'], 'time': node.duration} for node in memcache_nodes]
 
 

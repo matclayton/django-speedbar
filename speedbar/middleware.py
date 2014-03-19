@@ -32,49 +32,60 @@ if getattr(settings, 'SPEEDBAR_ENABLE', True):
     # by the django WSGI implementation.
     init_modules()
 
-    request_started.connect(setup_request_tracing, dispatch_uid='request_started_speedbar_setup_request_tracing')
-    request_finished.connect(store_request_trace, dispatch_uid='request_started_speedbar_store_request_trace')
+    request_started.connect(
+        setup_request_tracing, dispatch_uid='request_started_speedbar_setup_request_tracing')
+    request_finished.connect(
+        store_request_trace, dispatch_uid='request_started_speedbar_store_request_trace')
 
 
 HTML_TYPES = ('text/html', 'application/xhtml+xml')
-METRIC_PLACEHOLDER_RE = re.compile('<span data-module="(?P<module>[^"]+)" data-metric="(?P<metric>[^"]+)"></span>')
+METRIC_PLACEHOLDER_RE = re.compile(
+    '<span data-module="(?P<module>[^"]+)" data-metric="(?P<metric>[^"]+)"></span>')
 
 
 class SpeedbarMiddleware(object):
+
     def process_request(self, request):
         if getattr(settings, 'SPEEDBAR_ENABLE', True):
-            RequestTrace.instance().stacktracer.root.label = '%s %s' % (request.method, request.path)
+            RequestTrace.instance().stacktracer.root.label = '%s %s' % (
+                request.method, request.path)
 
     def process_response(self, request, response):
         if not getattr(settings, 'SPEEDBAR_ENABLE', True):
             return response
 
         request_trace = RequestTrace.instance()
-        metrics = dict((key, module.get_metrics()) for key, module in request_trace.modules.items())
+        metrics = dict((key, module.get_metrics())
+                       for key, module in request_trace.modules.items())
 
         if getattr(settings, 'SPEEDBAR_RESPONSE_HEADERS', False):
             self.add_response_headers(response, metrics)
 
         if hasattr(request, 'user') and request.user.is_staff:
             if getattr(settings, 'SPEEDBAR_TRACE', True):
-                response['X-TraceUrl'] = reverse('speedbar_trace', args=[request_trace.id])
+                response[
+                    'X-TraceUrl'] = reverse('speedbar_trace', args=[request_trace.id])
                 request_trace.persist_log = True
 
             if 'gzip' not in response.get('Content-Encoding', '') and response.get('Content-Type', '').split(';')[0] in HTML_TYPES:
 
-                # Force render of response (from lazy TemplateResponses) before speedbar is injected
+                # Force render of response (from lazy TemplateResponses) before
+                # speedbar is injected
                 if hasattr(response, 'render'):
                     response.render()
                 content = smart_unicode(response.content)
 
-                content = self.replace_templatetag_placeholders(content, metrics)
+                content = self.replace_templatetag_placeholders(
+                    content, metrics)
 
                 # Note: The URLs returned here do not exist at this point. The relevant data is added to the cache by a signal handler
                 # once all page processing is finally done. This means it is possible summary values displayed and the detailed
                 # break down won't quite correspond.
                 if getattr(settings, 'SPEEDBAR_PANEL', True):
-                    panel_url = reverse('speedbar_panel', args=[request_trace.id])
-                    panel_placeholder_url = reverse('speedbar_details_for_this_request')
+                    panel_url = reverse(
+                        'speedbar_panel', args=[request_trace.id])
+                    panel_placeholder_url = reverse(
+                        'speedbar_details_for_this_request')
                     content = content.replace(panel_placeholder_url, panel_url)
                     request_trace.persist_details = True
 
@@ -92,7 +103,8 @@ class SpeedbarMiddleware(object):
 
         for module, module_values in metrics.items():
             for key, value in module_values.items():
-                response['X-Mixcloud-%s-%s' % (sanitize(module), sanitize(key))] = value
+                response['X-Mixcloud-%s-%s' %
+                         (sanitize(module), sanitize(key))] = value
 
     def replace_templatetag_placeholders(self, content, metrics):
         """

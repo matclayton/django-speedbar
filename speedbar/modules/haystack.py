@@ -11,7 +11,8 @@ from .base import BaseModule, RequestTrace
 from .stacktracer import trace_method
 
 
-ENTRY_TYPE='haystack'
+ENTRY_TYPE = 'haystack'
+
 
 class HaystackModule(BaseModule):
     key = 'haystack'
@@ -23,6 +24,7 @@ class HaystackModule(BaseModule):
         redis_nodes = RequestTrace.instance().stacktracer.get_nodes(ENTRY_TYPE)
         return [{'query_string': node.extra['query_string'], 'kwargs': node.extra['kwargs'], 'time': node.duration} for node in redis_nodes]
 
+
 def init():
     if haystack is None:
         return False
@@ -30,11 +32,12 @@ def init():
     def search(self, query_string, *args, **kwargs):
         models = kwargs.get('models', None)
         if models:
-            description = '[%s] %s' % (", ".join(m.__name__ for m in models), query_string)
+            description = '[%s] %s' % (
+                ", ".join(m.__name__ for m in models), query_string)
         else:
             description = '[no models specified] %s' % (query_string,)
 
-        return (ENTRY_TYPE, 'Haystack: %s' % (description,), {'query_string' : query_string, 'kwargs': kwargs})
+        return (ENTRY_TYPE, 'Haystack: %s' % (description,), {'query_string': query_string, 'kwargs': kwargs})
 
     try:
         from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
