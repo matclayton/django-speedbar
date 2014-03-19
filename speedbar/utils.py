@@ -1,11 +1,11 @@
 from django.utils.importlib import import_module
 from django.conf import settings
 
-DETAILS_PREFIX='speedbar:details:'
-TRACE_PREFIX='speedbar:trace:'
+DETAILS_PREFIX = 'speedbar:details:'
+TRACE_PREFIX = 'speedbar:trace:'
 
 SPEEDBAR_MODULES = [
-    'speedbar.modules.stacktracer', # Most other modules depend on this one
+    'speedbar.modules.stacktracer',  # Most other modules depend on this one
     'speedbar.modules.pagetimer',
     'speedbar.modules.hostinformation',
     'speedbar.modules.sql',
@@ -19,11 +19,14 @@ SPEEDBAR_MODULES = [
 ]
 
 # A module comprises of two parts, both of which are optional. It may have an init() function which is called once
-# on server startup, and it may have a class called Module which is instantiated once per request.
+# on server startup, and it may have a class called Module which is
+# instantiated once per request.
 
 loaded_modules = []
 
 modules_initialised = False
+
+
 def init_modules():
     """
     Run the init function for all modules which have one

@@ -10,6 +10,7 @@ from .stacktracer import trace_method
 
 ENTRY_TYPE = 'CELERY'
 
+
 class CeleryModule(BaseModule):
     key = 'celery'
 

@@ -3,6 +3,7 @@ from .base import BaseModule
 
 import time
 
+
 class PageTimerModule(BaseModule):
     key = 'overall'
 
@@ -12,7 +13,7 @@ class PageTimerModule(BaseModule):
 
     def get_metrics(self):
         render_time = int((time.time() - self._start_time) * 1000)
-        return { 'time' : render_time }
+        return {'time': render_time}
 
 
 def init():

@@ -22,16 +22,23 @@ def patch_function_list(functions, action_type, format_string):
 
 
 def wrap_middleware_with_tracers(request_handler):
-    patch_function_list(request_handler._request_middleware, 'MIDDLEWARE_REQUEST', 'Middleware: %s (request)')
-    patch_function_list(request_handler._view_middleware, 'MIDDLEWARE_VIEW', 'Middleware: %s (view)')
-    patch_function_list(request_handler._template_response_middleware, 'MIDDLEWARE_TEMPLATE_RESPONSE', 'Middleware: %s (template response)')
-    patch_function_list(request_handler._response_middleware, 'MIDDLEWARE_RESPONSE', 'Middleware: %s (response)')
-    patch_function_list(request_handler._exception_middleware, 'MIDDLEWARE_EXCEPTION', 'Middleware: %s (exeption)')
+    patch_function_list(request_handler._request_middleware,
+                        'MIDDLEWARE_REQUEST', 'Middleware: %s (request)')
+    patch_function_list(
+        request_handler._view_middleware, 'MIDDLEWARE_VIEW', 'Middleware: %s (view)')
+    patch_function_list(request_handler._template_response_middleware,
+                        'MIDDLEWARE_TEMPLATE_RESPONSE', 'Middleware: %s (template response)')
+    patch_function_list(request_handler._response_middleware,
+                        'MIDDLEWARE_RESPONSE', 'Middleware: %s (response)')
+    patch_function_list(request_handler._exception_middleware,
+                        'MIDDLEWARE_EXCEPTION', 'Middleware: %s (exeption)')
 
 
 # The linter thinks the methods we monkeypatch are not used
 # pylint: disable=W0612
 middleware_patched = False
+
+
 def intercept_middleware():
     @monkeypatch_method(WSGIHandler)
     def __call__(original, self, *args, **kwargs):
@@ -63,13 +70,18 @@ def intercept_resolver_and_view():
     # inspect the callstack in __new__ and return either a normal object, or an instance of our proxying
     # class.
     real_resolver_cls = urlresolvers.RegexURLResolver
+
     class ProxyRegexURLResolverMetaClass(urlresolvers.RegexURLResolver.__class__):
+
         def __instancecheck__(self, instance):
             # Some places in django do a type check against RegexURLResolver and behave differently based on the result, so we have to
-            # make sure the replacement class we plug in accepts instances of both the default and replaced types.
+            # make sure the replacement class we plug in accepts instances of
+            # both the default and replaced types.
             return isinstance(instance, real_resolver_cls) or super(ProxyRegexURLResolverMetaClass, self).__instancecheck__(instance)
+
     class ProxyRegexURLResolver(object):
         __metaclass__ = ProxyRegexURLResolverMetaClass
+
         def __new__(cls, *args, **kwargs):
             real_object = real_resolver_cls(*args, **kwargs)
             stack = traceback.extract_stack()
@@ -79,19 +91,24 @@ def intercept_resolver_and_view():
                 return obj
             else:
                 return real_object
+
         def __getattr__(self, attr):
             return getattr(self.other, attr)
+
         def resolve(self, path):
             request_trace = RequestTrace.instance()
             if request_trace:
-                request_trace.stacktracer.push_stack('RESOLV', 'Resolving: ' + path)
+                request_trace.stacktracer.push_stack(
+                    'RESOLV', 'Resolving: ' + path)
             try:
                 callbacks = self.other.resolve(path)
             finally:
                 if request_trace:
                     request_trace.stacktracer.pop_stack()
-            # Replace the callback function with a traced copy so we can time how long the view takes.
-            callbacks.func = trace_function(callbacks.func, ('VIEW', 'View: ' + callbacks.view_name, {}))
+            # Replace the callback function with a traced copy so we can time
+            # how long the view takes.
+            callbacks.func = trace_function(
+                callbacks.func, ('VIEW', 'View: ' + callbacks.view_name, {}))
             return callbacks
     urlresolvers.RegexURLResolver = ProxyRegexURLResolver
 

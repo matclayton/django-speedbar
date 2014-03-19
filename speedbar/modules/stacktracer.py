@@ -7,7 +7,9 @@ from .monkey_patching import monkeypatch_method, CallableProxy
 
 import time
 
+
 class StackEntry(object):
+
     def __init__(self, id_generator, entry_map, entry_type, label, extra=None):
         self.id_generator = id_generator
         self.entry_map = entry_map
@@ -23,7 +25,8 @@ class StackEntry(object):
         self.end = time.time()
 
     def add_child(self, entry_type, label, extra=None):
-        child = StackEntry(self.id_generator, self.entry_map, entry_type, label, extra)
+        child = StackEntry(
+            self.id_generator, self.entry_map, entry_type, label, extra)
         self.children.append(child)
         return child
 
@@ -41,7 +44,7 @@ class StackEntry(object):
                 'end': round(self.end * 1000, 1),
                 'duration': round(self.duration * 1000, 1),
             },
-            'operation' : {
+            'operation': {
                 'type': self.entry_type,
                 'label': self.label,
             },
@@ -50,6 +53,7 @@ class StackEntry(object):
 
 
 class StackTracer(BaseModule):
+
     """
     This class maintains a call tree, with a pointer to the current stack
     entry so that new frames can be added at any time without further context
@@ -71,7 +75,8 @@ class StackTracer(BaseModule):
         if len(self.stack):
             entry = self.stack[-1].add_child(entry_type, label, extra)
         else:
-            entry = self.root = StackEntry(self._get_next_id, self.entry_map, entry_type, label, extra)
+            entry = self.root = StackEntry(
+                self._get_next_id, self.entry_map, entry_type, label, extra)
         self.stack.append(entry)
         return entry
 
@@ -85,7 +90,7 @@ class StackTracer(BaseModule):
     def get_node_metrics(self, node_type):
         nodes = self.get_nodes(node_type)
         return {
-            'time': int(sum(x.duration for x in nodes)*1000),
+            'time': int(sum(x.duration for x in nodes) * 1000),
             'count': len(nodes),
         }
 
@@ -114,12 +119,14 @@ class StackTracer(BaseModule):
 def trace_method(cls, method_name=None):
     def decorator(info_func):
         method_to_patch = method_name or info_func.__name__
+
         @monkeypatch_method(cls, method_to_patch)
         def tracing_method(original, self, *args, **kwargs):
             request_trace = RequestTrace.instance()
             if request_trace:
                 entry_type, label, extra = info_func(self, *args, **kwargs)
-                request_trace.stacktracer.push_stack(entry_type, label, extra=extra)
+                request_trace.stacktracer.push_stack(
+                    entry_type, label, extra=extra)
             try:
                 return original(*args, **kwargs)
             finally:
