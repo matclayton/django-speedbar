@@ -38,6 +38,7 @@ if getattr(settings, 'SPEEDBAR_ENABLE', True):
 
 HTML_TYPES = ('text/html', 'application/xhtml+xml')
 METRIC_PLACEHOLDER_RE = re.compile('<span data-module="(?P<module>[^"]+)" data-metric="(?P<metric>[^"]+)"></span>')
+SPEEDBAR_MIDDLEWARE_LAMBDA = lambda(request): hasattr(request, 'user') and request.user.is_staff
 
 
 class SpeedbarMiddleware(object):
@@ -60,7 +61,7 @@ class SpeedbarMiddleware(object):
         if getattr(settings, 'SPEEDBAR_RESPONSE_HEADERS', False):
             self.add_response_headers(response, metrics)
 
-        if hasattr(request, 'user') and request.user.is_staff:
+        if getattr(settings, 'SPEEDBAR_MIDDLEWARE_LAMBDA', SPEEDBAR_MIDDLEWARE_LAMBDA):
             if getattr(settings, 'SPEEDBAR_TRACE', True):
                 response['X-TraceUrl'] = reverse('speedbar_trace', args=[request_trace.id])
                 request_trace.persist_log = True
