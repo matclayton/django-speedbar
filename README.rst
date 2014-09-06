@@ -100,6 +100,9 @@ django-speedbar has a number of configuration settings.
         # ...
     ]
 
+    # Specify when to profile based on the request
+    SPEEDBAR_MIDDLEWARE_LAMBDA = lambda(request): hasattr(request, 'user') and request.user.is_staff
+
 Status
 ======
 
