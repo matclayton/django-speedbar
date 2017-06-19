@@ -14,7 +14,6 @@ setup(
     description='Provides a break down of page loading time',
     long_description=open('README.rst').read(),
     packages=find_packages(exclude=["tests",]),
-    install_requires=install_requires,
     license='MIT License',
     tests_require=tests_require,
     extras_require={'test': tests_require},
