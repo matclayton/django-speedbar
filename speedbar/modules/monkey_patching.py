@@ -1,6 +1,4 @@
-# This package has missing __init__.py files, so pylint can't see it
-# pylint: disable=F0401
-from peak.util.proxies import ObjectWrapper
+from utils import ObjectWrapper
 
 
 # The linter is dumb
