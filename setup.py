@@ -5,10 +5,6 @@ tests_require = [
     'tox>=2.3.1,<3.0.0',
 ]
 
-install_requires = [
-    'ProxyTypes>=0.9',
-]
-
 setup(
     name='django-speedbar',
     version='0.2.2',
